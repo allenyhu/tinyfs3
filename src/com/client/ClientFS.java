@@ -1,30 +1,19 @@
 package com.client;
 
-<<<<<<< HEAD
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-import java.net.Socket;
-=======
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
+
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
 
-import com.master.Master;
-
-import messages.CloseFileMessage;
-import messages.CreateDirMessage;
-import messages.CreateFileMessage;
-import messages.DeleteDirMessage;
-import messages.DeleteFileMessage;
-import messages.ListDirMessage;
-import messages.OpenFileMessage;
-import messages.RenameDirMessage;
->>>>>>> stash
+import com.messages.CloseFileMessage;
+import com.messages.CreateDirMessage;
+import com.messages.CreateFileMessage;
+import com.messages.DeleteDirMessage;
+import com.messages.DeleteFileMessage;
+import com.messages.ListDirMessage;
+import com.messages.OpenFileMessage;
+import com.messages.RenameDirMessage;
 
 public class ClientFS {
 	

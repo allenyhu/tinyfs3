@@ -5,6 +5,8 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
 
+import com.messages.FSMessage;
+
 public class MasterClientThread extends Thread{
 	private Socket s;
 	private Master master;
@@ -28,7 +30,7 @@ public class MasterClientThread extends Thread{
 			while(true){
 				//read message, and get updated message object once the action has executed
 				FSMessage mess = (FSMessage) ois.readObject();
-				FSMessage newMess = cfsmh.getMessage(mess, master);
+				FSMessage newMess = cfsmh.processMessage(mess, master);
 
 				oos.reset();
 				oos.writeObject(newMess);
@@ -37,7 +39,7 @@ public class MasterClientThread extends Thread{
 		} catch (ClassNotFoundException | IOException e) {
 			//System.out.println("client disconnected from master");
 		}finally{
-			master.save();
+			//master.save();
 		}
 	}
 
