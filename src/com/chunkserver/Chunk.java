@@ -8,7 +8,6 @@ import utility.Constants;
 
 public class Chunk {
 	private String filePath;
-	//private byte[] bytes; //actual bytes in chunk
 	private int numRecords;
 	private int freeSpace; //# bytes available; this will always be 4 bytes less than actual free bytes to store record's offset
 	private int freeOffset; //offset of free space from front of byte[]
@@ -69,17 +68,22 @@ public class Chunk {
 	 * @return index in the RID array at end of Chunk
 	 * @return -1 failure to write the record
 	 */
-	public int writeRecord(byte[] payload) {
+	public int appendRecord(byte[] payload) {
 		try {
 			//If the file corresponding to ChunkHandle does not exist then create it before writing into it
 			RandomAccessFile raf = new RandomAccessFile(this.filePath + "/" + this.chunkHandle, "rw");
 			raf.write(payload, this.freeOffset, payload.length);
+			
+			//update RID array
+			raf.seek(Constants.chunkSize - (4*this.numRecords+1));
+			raf.writeInt(this.freeOffset);
 			raf.close();
 			
+			//update header info
 			this.updateHeader(payload.length);
 			return (this.numRecords - 1);
-		} catch (IOException ex) {
-			ex.printStackTrace();
+		} catch (IOException ioe) {
+			System.out.println(this.chunkHandle + " appendRecord ioe: " + ioe.getMessage());
 			return -1;
 		}
 	}
@@ -120,17 +124,18 @@ public class Chunk {
 			int offset = raf.readInt();
 			
 			int size = -1;
-			if(index == (this.numRecords-1)) { //last record goes upto freeOffset
-				size = offset - this.freeOffset;
+			if(index == (this.numRecords-1)) { //last record 
+				size = offset - this.freeOffset; //goes upto freeOffset
 			} else { //use next record's offset to calculate this record's size size
 				raf.seek(RIDoffset-4);
 				size = offset - raf.readInt();
 			}
 			
-			byte[] payload = new byte[size];
+			byte[] payload = new byte[size]; //byte[] to be read to
 			int counter = 0;
+			
 			raf.seek(offset);
-			while(counter < size) {
+			while(counter < size) { //insure read correct # of bytes
 				counter = raf.read(payload, counter, size);
 				if(counter == -1) {
 					raf.close();
