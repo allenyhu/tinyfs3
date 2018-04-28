@@ -75,11 +75,11 @@ public class Chunk {
 			raf.write(payload, this.freeOffset, payload.length);
 			
 			//update RID array
-			raf.seek(Constants.chunkSize - (4*this.numRecords+1));
+			raf.seek(Constants.chunkSize - (4*this.numRecords+1)); //4 bytes back from current entry
 			raf.writeInt(this.freeOffset);
 			raf.close();
 			
-			//update header info
+			//update header info to reflect added record
 			this.updateHeader(payload.length);
 			return (this.numRecords - 1);
 		} catch (IOException ioe) {
