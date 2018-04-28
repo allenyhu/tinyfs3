@@ -255,31 +255,36 @@ public class Master extends Thread {
 			{
 				CreateDirMessage realMess = (CreateDirMessage) message;
 				recordLog.writeCreateDirRecord(realMess.dirname);
+				return;
 			}
 				
 			case CreateFile:
 			{
 				CreateFileMessage realMess = (CreateFileMessage) message;
-				FileHandle file = fileMap.get(realMess.filename);
+				FileHandle file = fileMap.get(realMess.tgtdir + realMess.filename);
 				recordLog.writeCreateFileRecord(file.getFileName(), file.getServers());
+				return;
 			}
 			
 			case DeleteDir:
 			{
 				DeleteDirMessage realMess = (DeleteDirMessage) message;
 				recordLog.WriteDeleteDirRecord(realMess.dirname);
+				return;
 			}
 				
 			case DeleteFile:
 			{
 				DeleteFileMessage realMess = (DeleteFileMessage) message;
 				recordLog.WriteDeleteFileRecord(realMess.filename);
+				return;
 			}
 				
 			case RenameDir:
 			{
 				RenameDirMessage realMess = (RenameDirMessage) message;
 				recordLog.WriteRenameDirRecord(realMess.src, realMess.newName);
+				return;
 			}
 		}
 	}

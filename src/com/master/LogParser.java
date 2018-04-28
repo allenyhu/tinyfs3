@@ -19,9 +19,16 @@ public class LogParser {
 	
 	
 	private static BufferedReader reader;
+	private File file;
+	private PrintWriter pw;
 	
 	public LogParser() {
-		
+		file = new File(Constants.OP_LOG);
+		try {
+			pw = new PrintWriter(file);
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		}
 	}
 	
 //	public void parseOperationLog() {
@@ -66,58 +73,30 @@ public class LogParser {
 	}
 	
 	public void writeCreateFileRecord(String filename, ArrayList<String> replicas) {
-		try {
-			File file = new File(Constants.OP_LOG);
-			PrintWriter pw = new PrintWriter(file);
-			String servers = "";
-			for(int i=0; i < replicas.size(); i++) {
-				servers += replicas.get(i);
-				if(i < (replicas.size() - 1)) { //not last
-					servers += ",";
-				}
+		String servers = "";
+		for(int i=0; i < replicas.size(); i++) {
+			servers += replicas.get(i);
+			if(i < (replicas.size() - 1)) { //not last
+				servers += ",";
 			}
-			pw.println(Long.toString(getTime()) + " " + Constants.logOperations.get(FSMessageType.CreateFile) + " " + filename + " " + servers);
-			pw.flush(); 
-			pw.close();
-		} catch(IOException ioe) {
-			System.out.println("WriteCreate " + filename + " error: " + ioe.getMessage());
-		}	
+		}
+		pw.println(Long.toString(getTime()) + " " + Constants.logOperations.get(FSMessageType.CreateFile) + " " + filename + " " + servers);
+		pw.flush(); 
 	}
 	
 	public void WriteDeleteDirRecord(String dir) {
-		try {
-			File file = new File(Constants.OP_LOG);
-			PrintWriter pw = new PrintWriter(file);	
-			pw.println(Long.toString(getTime()) + " " + Constants.logOperations.get(FSMessageType.DeleteDir) + " " + dir);
-			pw.flush();
-			pw.close();
-		} catch(IOException ioe) {
-			System.out.println("DeleteDir " + dir + " error: " + ioe.getMessage());
-		}	
+		pw.println(Long.toString(getTime()) + " " + Constants.logOperations.get(FSMessageType.DeleteDir) + " " + dir);
+		pw.flush();
 	}
 	
 	public void WriteDeleteFileRecord(String fileName) {
-		try {
-			File file = new File(Constants.OP_LOG);
-			PrintWriter pw = new PrintWriter(file);	
-			pw.println(Long.toString(getTime()) + " " + Constants.logOperations.get(FSMessageType.DeleteFile) + " " + fileName);
-			pw.flush();
-			pw.close();
-		} catch(IOException ioe) {
-			System.out.println("DeleteFile " + fileName + " error: " + ioe.getMessage());
-		}	
+		pw.println(Long.toString(getTime()) + " " + Constants.logOperations.get(FSMessageType.DeleteFile) + " " + fileName);
+		pw.flush();
 	}
 	
 	public void WriteRenameDirRecord(String originalName, String newName) {
-		try {
-			File file = new File(Constants.OP_LOG);
-			PrintWriter pw = new PrintWriter(file);	
-			pw.println(Long.toString(getTime()) + " " + Constants.logOperations.get(FSMessageType.RenameDir) + " " + originalName + " " + newName);
-			pw.flush();
-			pw.close();
-		} catch(IOException ioe) {
-			System.out.println("RenameDir " + originalName + " " + newName + " error: " + ioe.getMessage());
-		}	
+		pw.println(Long.toString(getTime()) + " " + Constants.logOperations.get(FSMessageType.RenameDir) + " " + originalName + " " + newName);
+		pw.flush();
 	}
 	
 //	public void writeWrite(String filename, byte[] payload, RID rid) {
@@ -134,15 +113,8 @@ public class LogParser {
 //	}
 	
 	public void writeCreateDirRecord(String dir) {
-		try {
-			File file = new File(Constants.OP_LOG);
-			PrintWriter pw = new PrintWriter(file);
-			pw.println(Long.toString(getTime()) + " " + Constants.logOperations.get(FSMessageType.CreateDir) + " " + dir);
-			pw.flush();
-			pw.close();
-		} catch(IOException ioe) {
-			System.out.println("WriteDir " + dir + " error: " + ioe.getMessage());
-		}	
+		pw.println(Long.toString(getTime()) + " " + Constants.logOperations.get(FSMessageType.CreateDir) + " " + dir);
+		pw.flush();	
 	}
 	
 	private long getTime() {

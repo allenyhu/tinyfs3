@@ -27,23 +27,21 @@ public class MasterClientThread extends Thread{
 	
 	@Override
 	public void run(){
-		FSMessage returnMess = null;
 		try {
 			while(true){
 				//read message, and get updated message object once the action has executed
 				FSMessage mess = (FSMessage) ois.readObject();
-				returnMess = cfsmh.processMessage(mess, master);
+				FSMessage returnMess = cfsmh.processMessage(mess, master);
 
 				oos.reset();
 				oos.writeObject(returnMess);
 				oos.flush();
+				if (returnMess.returnVal == FSReturnVals.Success){
+					master.WriteLog(returnMess);
+				}
 			}
 		} catch (ClassNotFoundException | IOException e) {
 			//System.out.println("client disconnected from master");
-		}finally{
-			if (returnMess.returnVal == FSReturnVals.Success){
-				master.WriteLog(returnMess);
-			}
 		}
 	}
 
