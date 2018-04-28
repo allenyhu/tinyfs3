@@ -2,21 +2,21 @@ package com.client;
 
 public class RID {
 	//NEEDS TOSTRING METHOD FOR LOGGING
-	private String chunkHandle;
+	private double chunkHandle;
 	private int index; //index for array at end of chunk
 	
-	public RID(String chunkHandle, int index) {
+	public RID(double chunkHandle, int index) {
 		this.chunkHandle = chunkHandle;
 		this.index = index;
 	}
 	
 	public RID(String logString) {
 		String[] log = logString.split("|");
-		this.chunkHandle = log[0];
+		this.chunkHandle = Double.parseDouble(log[0]);
 		this.index = Integer.parseInt(log[1]);
 	}
 	
-	public String getChunkHandle() {
+	public double getChunkHandle() {
 		return this.chunkHandle;
 	}
 	
@@ -26,7 +26,7 @@ public class RID {
 	
 	@Override
 	public String toString() {
-		return this.chunkHandle + "|" + Integer.toString(this.index);
+		return this.chunkHandle + "|" + this.index;
 	}
 	
 }
