@@ -67,7 +67,7 @@ public class FileHandle implements Serializable{
 		servers.add(server);
 	}
 	
-	public Boolean isValidFile() {
+	public boolean isValid() {
 		return servers.size() > 0 && serverPorts.size() > 0 && fileName.length() > 0;
 	}
 }
