@@ -1,12 +1,16 @@
 package com.master;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+
+import com.client.RID;
 
 import utility.Constants;
 
@@ -62,5 +66,49 @@ public class LogParser {
 		} catch (IOException ioe) {
 			System.out.println("Checkpoint read line error: " + ioe.getMessage());
 		}
+	}
+	
+	private void writeCreate(String filename, ArrayList<String> replicas) {
+		try {
+			File file = new File(Constants.OP_LOG);
+			PrintWriter pw = new PrintWriter(file);
+			String servers = "";
+			for(int i=0; i < replicas.size(); i++) {
+				servers += replicas.get(i);
+				if(i < (replicas.size() - 1)) { //not last
+					servers += ",";
+				}
+			}
+			pw.println("C " + filename + " " + servers);
+			pw.flush();
+			pw.close();
+		} catch(IOException ioe) {
+			System.out.println("WriteCreate " + filename + " error: " + ioe.getMessage());
+		}	
+	}
+	
+	private void writeEdit(String type, String filename) {
+		try {
+			File file = new File(Constants.OP_LOG);
+			PrintWriter pw = new PrintWriter(file);	
+			pw.println(type + " " + filename);
+			pw.flush();
+			pw.close();
+		} catch(IOException ioe) {
+			System.out.println("WriteCreate " + filename + " error: " + ioe.getMessage());
+		}	
+	}
+	
+	private void writeWrite(String filename, byte[] payload, RID rid) {
+		try {
+			File file = new File(Constants.OP_LOG);
+			PrintWriter pw = new PrintWriter(file);	
+			String payString = new String(payload);
+			pw.println( "W " + filename + " " + payload + " " + rid.toString());
+			pw.flush();
+			pw.close();
+		} catch(IOException ioe) {
+			System.out.println("WriteCreate " + filename + " error: " + ioe.getMessage());
+		}	
 	}
 }
