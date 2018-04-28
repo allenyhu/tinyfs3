@@ -249,6 +249,7 @@ public class Master extends Thread {
 	}
 	
 	public void WriteLog(FSMessage message) {
+		//TODO save snapshots
 		switch (message.type) {
 			case CreateDir:
 			{
@@ -260,22 +261,25 @@ public class Master extends Thread {
 			{
 				CreateFileMessage realMess = (CreateFileMessage) message;
 				FileHandle file = fileMap.get(realMess.filename);
-				recordLog.writeCreateFile(file.getFileName(), file.getServers());
+				recordLog.writeCreateFileRecord(file.getFileName(), file.getServers());
 			}
 			
 			case DeleteDir:
 			{
-//				DeleteDirMessage realMess = (DeleteDirMessage) message;
+				DeleteDirMessage realMess = (DeleteDirMessage) message;
+				recordLog.WriteDeleteDirRecord(realMess.dirname);
 			}
 				
 			case DeleteFile:
 			{
-//				DeleteFileMessage realMess = (DeleteFileMessage) message;
+				DeleteFileMessage realMess = (DeleteFileMessage) message;
+				recordLog.WriteDeleteFileRecord(realMess.filename);
 			}
 				
 			case RenameDir:
 			{
-//				RenameDirMessage realMess = (RenameDirMessage) message;
+				RenameDirMessage realMess = (RenameDirMessage) message;
+				recordLog.WriteRenameDirRecord(realMess.src, realMess.newName);
 			}
 		}
 	}

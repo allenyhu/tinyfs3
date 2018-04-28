@@ -23,6 +23,9 @@ public class Constants {
 		
 		map.put(FSMessageType.CreateDir, "CreateDir");
 		map.put(FSMessageType.CreateFile, "CreateFile");
+		map.put(FSMessageType.DeleteDir, "DeleteDir");
+		map.put(FSMessageType.DeleteFile, "DeleteFile");
+		map.put(FSMessageType.RenameDir, "RenameDir");
 		
 		logOperations = (HashMap<FSMessageType, String>) Collections.unmodifiableMap(map);
 	}

@@ -65,7 +65,7 @@ public class LogParser {
 		}
 	}
 	
-	public void writeCreateFile(String filename, ArrayList<String> replicas) {
+	public void writeCreateFileRecord(String filename, ArrayList<String> replicas) {
 		try {
 			File file = new File(Constants.OP_LOG);
 			PrintWriter pw = new PrintWriter(file);
@@ -84,30 +84,54 @@ public class LogParser {
 		}	
 	}
 	
-	public void writeEdit(String type, String filename) {
+	public void WriteDeleteDirRecord(String dir) {
 		try {
 			File file = new File(Constants.OP_LOG);
 			PrintWriter pw = new PrintWriter(file);	
-			pw.println(type + " " + filename);
+			pw.println(Long.toString(getTime()) + " " + Constants.logOperations.get(FSMessageType.DeleteDir) + " " + dir);
 			pw.flush();
 			pw.close();
 		} catch(IOException ioe) {
-			System.out.println("WriteCreate " + filename + " error: " + ioe.getMessage());
+			System.out.println("DeleteDir " + dir + " error: " + ioe.getMessage());
 		}	
 	}
 	
-	public void writeWrite(String filename, byte[] payload, RID rid) {
+	public void WriteDeleteFileRecord(String fileName) {
 		try {
 			File file = new File(Constants.OP_LOG);
 			PrintWriter pw = new PrintWriter(file);	
-			String payString = new String(payload);
-			pw.println( "W " + filename + " " + payload + " " + rid.toString());
+			pw.println(Long.toString(getTime()) + " " + Constants.logOperations.get(FSMessageType.DeleteFile) + " " + fileName);
 			pw.flush();
 			pw.close();
 		} catch(IOException ioe) {
-			System.out.println("WriteCreate " + filename + " error: " + ioe.getMessage());
+			System.out.println("DeleteFile " + fileName + " error: " + ioe.getMessage());
 		}	
 	}
+	
+	public void WriteRenameDirRecord(String originalName, String newName) {
+		try {
+			File file = new File(Constants.OP_LOG);
+			PrintWriter pw = new PrintWriter(file);	
+			pw.println(Long.toString(getTime()) + " " + Constants.logOperations.get(FSMessageType.RenameDir) + " " + originalName + " " + newName);
+			pw.flush();
+			pw.close();
+		} catch(IOException ioe) {
+			System.out.println("RenameDir " + originalName + " " + newName + " error: " + ioe.getMessage());
+		}	
+	}
+	
+//	public void writeWrite(String filename, byte[] payload, RID rid) {
+//		try {
+//			File file = new File(Constants.OP_LOG);
+//			PrintWriter pw = new PrintWriter(file);	
+//			String payString = new String(payload);
+//			pw.println( "W " + filename + " " + payload + " " + rid.toString());
+//			pw.flush();
+//			pw.close();
+//		} catch(IOException ioe) {
+//			System.out.println("WriteCreate " + filename + " error: " + ioe.getMessage());
+//		}	
+//	}
 	
 	public void writeCreateDirRecord(String dir) {
 		try {
