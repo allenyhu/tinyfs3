@@ -1,9 +1,8 @@
 package com.messages;
 
 import java.io.Serializable;
+
 import com.client.ClientFS.FSReturnVals;
-import com.client.FileHandle;
-import com.client.RID;
 
 public class FSMessage implements Serializable {
 	
@@ -14,7 +13,8 @@ public class FSMessage implements Serializable {
 		DeleteDir,
 		OpenFile,
 		ListDir,
-		DeleteFile
+		DeleteFile,
+		RenameDir
 	}
 	
 	public FSReturnVals returnVal;
