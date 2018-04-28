@@ -10,17 +10,27 @@ public class FileHandle implements Serializable{
 	
 	private ArrayList<String> chunks;
 	private ArrayList<String> servers;
+	private ArrayList<Integer> serverPorts;
 	private String fileName;
-	private int serverPort = Constants.chunkServerPort;
 	
 	public FileHandle() {
-		
+		servers = new ArrayList<String>();
+		chunks = new ArrayList<String>();
+		serverPorts = new ArrayList<Integer>();
+
+		servers.add(Constants.ChunkServerIP);
+		serverPorts.add(Constants.chunkServerPort);
 	}
 	
 	public FileHandle(String name){
 		fileName = name;
+		
+		servers = new ArrayList<String>();
+		chunks = new ArrayList<String>();
+		serverPorts = new ArrayList<Integer>();
+		
 		servers.add(Constants.ChunkServerIP);
-		//TODO modify list to include ports?
+		serverPorts.add(Constants.chunkServerPort);
 	}
 	
 	public void setFileName(String newName) {
@@ -35,19 +45,18 @@ public class FileHandle implements Serializable{
 		return chunks;
 	}
 
-	public int getServerPort() {
-		return serverPort;
+	public ArrayList<Integer> getServerPorts() {
+		return serverPorts;
 	}
 
-	public void setServerPort(int serverPort) {
-		this.serverPort = serverPort;
+	public void addServerPort(int serverPort) {
+		serverPorts.add(serverPort);
 	}
 	
 	public void copy(FileHandle file) {
 		fileName = file.fileName;
 		chunks = file.chunks;
 		servers = file.servers;
-		serverPort = file.serverPort;
 	}
 
 	public ArrayList<String> getServers() {
@@ -56,5 +65,9 @@ public class FileHandle implements Serializable{
 
 	public void addServer(String server) {
 		servers.add(server);
+	}
+	
+	public boolean isValid() {
+		return servers.size() > 0 && serverPorts.size() > 0 && fileName.length() > 0;
 	}
 }

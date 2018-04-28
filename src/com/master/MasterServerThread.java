@@ -12,13 +12,15 @@ public class MasterServerThread extends Thread {
 	private ObjectInputStream ois;
 	private ObjectOutputStream oos;
 	private Master master;
+	private String name;
 	
 	//specifically used for master to communicate with chunk server
-	public MasterServerThread(Socket s, ObjectInputStream ois, ObjectOutputStream oos, Master master){
+	public MasterServerThread(Socket s, ObjectInputStream ois, ObjectOutputStream oos, Master master, String name){
 		this.s = s;
 		this.master = master;
 		this.ois = ois;
 		this.oos = oos;
+		this.name = name;
 		this.start();
 	}
 	
