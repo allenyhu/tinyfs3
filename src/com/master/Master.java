@@ -12,14 +12,11 @@ import java.util.Set;
 
 import com.client.ClientFS.FSReturnVals;
 import com.client.FileHandle;
-import com.messages.CloseFileMessage;
 import com.messages.CreateDirMessage;
 import com.messages.CreateFileMessage;
 import com.messages.DeleteDirMessage;
 import com.messages.DeleteFileMessage;
 import com.messages.FSMessage;
-import com.messages.ListDirMessage;
-import com.messages.OpenFileMessage;
 import com.messages.RenameDirMessage;
 
 import utility.Constants;
@@ -27,19 +24,20 @@ import utility.Constants;
 public class Master extends Thread {
 	public Set<String> directories; 	// Keeps track of all directories
 	public HashMap<String, FileHandle> fileMap;
-		
+	private ArrayList<MasterServerThread> chunkServers;
+
 	private ServerSocket ss;
 	private Socket chunkServerSocket;
 	
-	//private Socket toChunkServerSocket;
 	private ObjectInputStream fromChunkServerStream;
 	private ObjectOutputStream toChunkServerStream;
 	private LogParser recordLog;
 	
 	Master() {
-		//TODO load previous directory snapshot
 		recordLog = new LogParser();
+		//TODO load previous directory snapshot
 		loadState();
+		chunkServers = new ArrayList<MasterServerThread>();
 		
 		try {
 			ss = new ServerSocket(Constants.masterPort);
@@ -52,10 +50,9 @@ public class Master extends Thread {
 //			fromChunkServerStream = new ObjectInputStream(chunkServerSocket.getInputStream());
 //			toChunkServerStream.writeObject("master");
 //			toChunkServerStream.flush();
-			//TODO Specify chunk size to server?
-			//TODO Master needs a list of all chunkServers
+
 		} catch (IOException e) {
-			e.printStackTrace();
+			System.out.println("Chunkserver not online");
 			return;
 		}
 		this.start();
@@ -73,7 +70,7 @@ public class Master extends Thread {
 				String identifier = (String) ois.readObject();
 				
 				if (identifier.equals("server")){
-					new MasterServerThread(s, ois, oos, this);
+					chunkServers.add(new MasterServerThread(s, ois, oos, this, s.getInetAddress().getHostAddress()));
 				}
 				
 				else if (identifier.equals("client")){
