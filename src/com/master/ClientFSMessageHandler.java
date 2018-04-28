@@ -9,6 +9,7 @@ import com.messages.DeleteFileMessage;
 import com.messages.FSMessage;
 import com.messages.ListDirMessage;
 import com.messages.OpenFileMessage;
+import com.messages.RenameDirMessage;
 
 public class ClientFSMessageHandler {
 	public FSMessage processMessage(FSMessage message, Master master) {
@@ -67,11 +68,11 @@ public class ClientFSMessageHandler {
 				return realMess;
 			}
 				
-//			case RenameDir:
-//				RenameDirMessage realMess = (RenameDirMessage) message;
-//				FSReturnVals returnVal = master.RenameDir(realMess.src, realMess.NewName);
-//				realMess.returnVal = returnVal;
-//				return realMess;
+			case RenameDir:
+				RenameDirMessage realMess = (RenameDirMessage) message;
+				FSReturnVals returnVal = master.RenameDir(realMess.src, realMess.newName);
+				realMess.returnVal = returnVal;
+				return realMess;
 				
 			default:
 				return null;

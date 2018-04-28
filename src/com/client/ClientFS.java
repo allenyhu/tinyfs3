@@ -15,13 +15,13 @@ import com.messages.ListDirMessage;
 import com.messages.OpenFileMessage;
 import com.messages.RenameDirMessage;
 
+import utility.Constants;
+
 public class ClientFS {
 	
 	private Socket s;
 	private ObjectOutputStream oos;
 	private ObjectInputStream ois;
-	private String masterIP;
-	private Integer masterPort;
 
 	public enum FSReturnVals {
 		DirExists, // Returned by CreateDir when directory exists
@@ -42,7 +42,7 @@ public class ClientFS {
 	//Client connection with the master, communicates through the MasterClientThread
 	public ClientFS(){
 		try {
-			s = new Socket(masterIP, masterPort);
+			s = new Socket(Constants.masterIP, Constants.masterPort);
 			oos = new ObjectOutputStream(s.getOutputStream());
 			oos.flush();
 			ois = new ObjectInputStream(s.getInputStream());

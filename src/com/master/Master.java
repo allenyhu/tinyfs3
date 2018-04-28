@@ -11,14 +11,14 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import com.client.FileHandle;
 import com.client.ClientFS.FSReturnVals;
+import com.client.FileHandle;
 
 import utility.Constants;
 
 public class Master extends Thread {
 	public Set<String> directories; 	// Keeps track of all directories
-	public Map<String, FileHandle> fileMap;
+	public HashMap<String, FileHandle> fileMap;
 		
 	private ServerSocket ss;
 	private Socket chunkServerSocket;
@@ -33,19 +33,20 @@ public class Master extends Thread {
 		
 		try {
 			ss = new ServerSocket(Constants.masterPort);
-			chunkServerSocket = new Socket(Constants.ChunkServerIP, Constants.chunkServerPort);
-			
-			//create a socket to the chunk server and store it
-			toChunkServerStream = new ObjectOutputStream(chunkServerSocket.getOutputStream());
-			toChunkServerStream.flush();
-			
-			fromChunkServerStream = new ObjectInputStream(chunkServerSocket.getInputStream());
-			toChunkServerStream.writeObject("master");
-			toChunkServerStream.flush();
+//			chunkServerSocket = new Socket(Constants.ChunkServerIP, Constants.chunkServerPort);
+//			
+//			//create a socket to the chunk server and store it
+//			toChunkServerStream = new ObjectOutputStream(chunkServerSocket.getOutputStream());
+//			toChunkServerStream.flush();
+//			
+//			fromChunkServerStream = new ObjectInputStream(chunkServerSocket.getInputStream());
+//			toChunkServerStream.writeObject("master");
+//			toChunkServerStream.flush();
 			//TODO Specify chunk size to server?
 			//TODO Master needs a list of all chunkServers
 		} catch (IOException e) {
 			e.printStackTrace();
+			return;
 		}
 		this.start();
 	}
@@ -131,25 +132,27 @@ public class Master extends Thread {
 			return FSReturnVals.DestDirExists;	
 		}
 		
-		for (String directory : directories) {
-			if (directory.startsWith(src)) {
-				String newDirectory = directory.replace(src, newname);
-				directories.remove(directory);
-				directories.add(newDirectory);
-			}
-		}
+//		for (String directory : directories) {
+//			if (directory.startsWith(src)) {
+//				String newDirectory = directory.replace(src, newname);
+//				directories.remove(directory);
+//				directories.add(newDirectory);
+//			}
+//		}
+//		
+//		for (String key : fileMap.keySet()) {
+//			if (key.startsWith(src)) {
+//				String newFilePath = key.replace(src, newname);
+//				FileHandle file = fileMap.get(key);
+//				file.setFileName(newFilePath);
+//				
+//				fileMap.remove(key);
+//				fileMap.put(newFilePath, file);
+//			}
+//		}
 		
-		for (String key : fileMap.keySet()) {
-			if (key.startsWith(src)) {
-				String newFilePath = key.replace(src, newname);
-				FileHandle file = fileMap.get(key);
-				file.setFileName(newFilePath);
-				
-				fileMap.remove(key);
-				fileMap.put(newFilePath, file);
-			}
-		}
-
+		directories.remove(src);
+		directories.add(newname);
 		return FSReturnVals.Success;
 		
 	}
@@ -204,8 +207,8 @@ public class Master extends Thread {
 		if (!directories.contains(tgtdir)) {
 			return FSReturnVals.SrcDirNotExistent;
 		}
-		
-		if (!directories.contains(filePath)) {
+
+		if (!fileMap.containsKey(filePath)) {
 			return FSReturnVals.FileDoesNotExist;	
 		}
 		
@@ -235,4 +238,8 @@ public class Master extends Thread {
 		return FSReturnVals.Success;
 	}
 	
+	public static void main(String args[])
+	{
+		new Master();
+	}
 }
