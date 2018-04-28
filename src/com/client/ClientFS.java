@@ -1,16 +1,37 @@
 package com.client;
 
+<<<<<<< HEAD
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
+=======
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.net.Socket;
+
+import com.master.Master;
+
+import messages.CloseFileMessage;
+import messages.CreateDirMessage;
+import messages.CreateFileMessage;
+import messages.DeleteDirMessage;
+import messages.DeleteFileMessage;
+import messages.ListDirMessage;
+import messages.OpenFileMessage;
+import messages.RenameDirMessage;
+>>>>>>> stash
 
 public class ClientFS {
 	
 	private Socket s;
 	private ObjectOutputStream oos;
 	private ObjectInputStream ois;
-	private String masterIpaddress;
+	private String masterIP;
 	private Integer masterPort;
 
 	public enum FSReturnVals {
@@ -29,16 +50,17 @@ public class ClientFS {
 		Fail //Returned when a method fails
 	}
 	
+	//Client connection with the master, communicates through the MasterClientThread
 	public ClientFS(){
 		try {
-			s = new Socket(masterIpaddress, masterPort);
+			s = new Socket(masterIP, masterPort);
 			oos = new ObjectOutputStream(s.getOutputStream());
 			oos.flush();
 			ois = new ObjectInputStream(s.getInputStream());
 			oos.writeObject("client");
 			oos.flush();
 		} catch (IOException e) {
-			System.out.println("exception in client fs constructor: "+e.getMessage());
+			System.out.println("Exception in ClientFS constructor: "+e.getMessage());
 		}
 	}
 
@@ -51,7 +73,15 @@ public class ClientFS {
 	 * "CSCI485"), CreateDir("/Shahram/CSCI485/", "Lecture1")
 	 */
 	public FSReturnVals CreateDir(String src, String dirname) {
-		return null;
+		try {
+			oos.writeObject(new CreateDirMessage(src, dirname));
+			oos.flush();
+			CreateDirMessage returnMessage = (CreateDirMessage) ois.readObject();
+			return returnMessage.returnVal;
+		} catch (IOException | ClassNotFoundException e) {
+			System.out.println("Exception in creating directory: "+e.getMessage());
+			return FSReturnVals.Fail;
+		}
 	}
 
 	/**
@@ -62,7 +92,15 @@ public class ClientFS {
 	 * Example usage: DeleteDir("/Shahram/CSCI485/", "Lecture1")
 	 */
 	public FSReturnVals DeleteDir(String src, String dirname) {
-		return null;
+		try {
+			oos.writeObject(new DeleteDirMessage(src, dirname));
+			oos.flush();
+			DeleteDirMessage returnMessage = (DeleteDirMessage) ois.readObject();
+			return returnMessage.returnVal;
+		} catch (IOException | ClassNotFoundException e) {
+			System.out.println("Exception in deleting directory: "+e.getMessage());
+			return FSReturnVals.Fail;
+		}
 	}
 
 	/**
@@ -74,7 +112,15 @@ public class ClientFS {
 	 * "/Shahram/CSCI485" to "/Shahram/CSCI550"
 	 */
 	public FSReturnVals RenameDir(String src, String NewName) {
-		return null;
+		try {
+			oos.writeObject(new RenameDirMessage(src, NewName));
+			oos.flush();
+			RenameDirMessage returnMessage = (RenameDirMessage) ois.readObject();
+			return returnMessage.returnVal;
+		} catch (IOException | ClassNotFoundException e) {
+			System.out.println("Exception in renaming directory: "+e.getMessage());
+			return FSReturnVals.Fail;
+		}
 	}
 
 	/**
@@ -85,7 +131,15 @@ public class ClientFS {
 	 * Example usage: ListDir("/Shahram/CSCI485")
 	 */
 	public String[] ListDir(String tgt) {
-		return null;
+		try {
+			oos.writeObject(new ListDirMessage(tgt));
+			oos.flush();
+			ListDirMessage returnMessage = (ListDirMessage) ois.readObject();
+			return returnMessage.returnedDirs;
+		} catch (IOException | ClassNotFoundException e) {
+			System.out.println("Exception in listing directory: "+e.getMessage());
+			return null;
+		}
 	}
 
 	/**
@@ -96,7 +150,15 @@ public class ClientFS {
 	 * Example usage: Createfile("/Shahram/CSCI485/Lecture1/", "Intro.pptx")
 	 */
 	public FSReturnVals CreateFile(String tgtdir, String filename) {
-		return null;
+		try {
+			oos.writeObject(new CreateFileMessage(tgtdir, filename));
+			oos.flush();
+			CreateFileMessage returnMessage = (CreateFileMessage) ois.readObject();
+			return returnMessage.returnVal;
+		} catch (IOException | ClassNotFoundException e) {
+			System.out.println("Exception in creating file: "+e.getMessage());
+			return FSReturnVals.Fail;
+		}
 	}
 
 	/**
@@ -107,7 +169,15 @@ public class ClientFS {
 	 * Example usage: DeleteFile("/Shahram/CSCI485/Lecture1/", "Intro.pptx")
 	 */
 	public FSReturnVals DeleteFile(String tgtdir, String filename) {
-		return null;
+		try {
+			oos.writeObject(new DeleteFileMessage(tgtdir, filename));
+			oos.flush();
+			DeleteFileMessage returnMessage = (DeleteFileMessage) ois.readObject();
+			return returnMessage.returnVal;
+		} catch (IOException | ClassNotFoundException e) {
+			System.out.println("Exception in deleting file: "+e.getMessage());
+			return FSReturnVals.Fail;
+		}
 	}
 
 	/**
@@ -118,7 +188,16 @@ public class ClientFS {
 	 * Example usage: OpenFile("/Shahram/CSCI485/Lecture1/Intro.pptx", FH1)
 	 */
 	public FSReturnVals OpenFile(String FilePath, FileHandle ofh) {
-		return null;
+		try {
+			oos.writeObject(new OpenFileMessage(FilePath, ofh));
+			oos.flush();
+			OpenFileMessage returnMessage = (OpenFileMessage) ois.readObject();
+			ofh.copy(returnMessage.ofh);
+			return returnMessage.returnVal;
+		} catch (IOException | ClassNotFoundException e) {
+			System.out.println("Exception in opening file: "+e.getMessage());
+			return FSReturnVals.Fail;
+		}
 	}
 
 	/**
@@ -127,7 +206,16 @@ public class ClientFS {
 	 * Example usage: CloseFile(FH1)
 	 */
 	public FSReturnVals CloseFile(FileHandle ofh) {
-		return null;
+		try {
+			oos.writeObject(new CloseFileMessage(ofh));
+			oos.flush();
+			CloseFileMessage returnMessage = (CloseFileMessage) ois.readObject();
+			ofh = returnMessage.ofh;
+			return returnMessage.returnVal;
+		} catch (IOException | ClassNotFoundException e) {
+			System.out.println("Exception in closing file: "+e.getMessage());
+			return FSReturnVals.Fail;
+		}
 	}
 
 }

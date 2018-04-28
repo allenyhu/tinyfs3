@@ -18,7 +18,7 @@ public class MasterClientThread extends Thread{
 		this.master = master;
 		this.oos = oos;
 		this.ois = ois;
-		cfsmh = new ClientFSMessageHanderl();
+		cfsmh = new ClientFSMessageHandler();
 		this.start();
 	}
 	
