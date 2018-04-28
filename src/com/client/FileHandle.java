@@ -1,16 +1,26 @@
 package com.client;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 
-public class FileHandle {
+import utility.Constants;
 
+public class FileHandle implements Serializable{
+	private static final long serialVersionUID = 5199772076276151769L;
+	
 	private ArrayList<String> chunks;
+	private ArrayList<String> servers;
 	private String fileName;
-	private String serverIPAddress;
-	private int serverPort;
+	private int serverPort = Constants.chunkServerPort;
+	
+	public FileHandle() {
+		
+	}
 	
 	public FileHandle(String name){
 		fileName = name;
+		servers.add(Constants.ChunkServerIP);
+		//TODO modify list to include ports?
 	}
 	
 	public void setFileName(String newName) {
@@ -25,14 +35,6 @@ public class FileHandle {
 		return chunks;
 	}
 
-	public String getServerIPAddress() {
-		return serverIPAddress;
-	}
-
-	public void setServerIPAddress(String serverIPAddress) {
-		this.serverIPAddress = serverIPAddress;
-	}
-
 	public int getServerPort() {
 		return serverPort;
 	}
@@ -44,7 +46,15 @@ public class FileHandle {
 	public void copy(FileHandle file) {
 		fileName = file.fileName;
 		chunks = file.chunks;
-		serverIPAddress = file.serverIPAddress;
+		servers = file.servers;
 		serverPort = file.serverPort;
+	}
+
+	public ArrayList<String> getServers() {
+		return servers;
+	}
+
+	public void addServer(String server) {
+		servers.add(server);
 	}
 }

@@ -6,51 +6,48 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.sql.Timestamp;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
+import java.util.Date;
 
 import com.client.RID;
+import com.messages.FSMessage.FSMessageType;
 
 import utility.Constants;
 
 public class LogParser {
 	
-	private HashMap<String, ArrayList<String>> fileChunks;
 	
 	private static BufferedReader reader;
 	
 	public LogParser() {
-		this.fileChunks = new HashMap<String, ArrayList<String>>();
+		
 	}
 	
-	/**
-	 * Parses the operation log
-	 */
-	public void parseOperationLog() {
-		try {
-			reader = new BufferedReader(new FileReader(Constants.OP_LOG));
-			String line;
-			String[] op;
-			while ((line = reader.readLine()) != null) {
-				op = line.split(" "); // Create/Rename/Delete/Write | filename | optional data (chunk replica locs for create, data to write)
-				switch(op[0]) {
-					case "C": this.create(op[1], Arrays.asList(op[2].split(","))); //filename, list of replica locations
-							  break;
-					case "R": this.rename(op[1]);
-							  break;
-					case "D": this.delete(op[1]);
-							  break;
-					case "W": this.write(op[1], op[2], op[3]); //filename | byte[] | RID
-							  break;
-				}
-			}
-		} catch (FileNotFoundException fnfe) {
-			System.out.println("NO OPERATION LOG: " + fnfe.getMessage());
-		} catch (IOException ioe) {
-			System.out.println("Operation read line error: " + ioe.getMessage());
-		}
-	}
+//	public void parseOperationLog() {
+//		try {
+//			reader = new BufferedReader(new FileReader(Constants.OP_LOG));
+//			String line;
+//			String[] op;
+//			while ((line = reader.readLine()) != null) {
+//				op = line.split(" "); // Create/Rename/Delete/Write | filename | optional data (chunk replica locs for create, data to write)
+//				switch(op[0]) {
+//					case "C": this.create(op[1], Arrays.asList(op[2].split(","))); //filename, list of replica locations
+//							  break;
+//					case "R": this.rename(op[1]);
+//							  break;
+//					case "D": this.delete(op[1]);
+//							  break;
+//					case "W": this.write(op[1], op[2], op[3]); //filename | byte[] | RID
+//							  break;
+//				}
+//			}
+//		} catch (FileNotFoundException fnfe) {
+//			System.out.println("NO OPERATION LOG: " + fnfe.getMessage());
+//		} catch (IOException ioe) {
+//			System.out.println("Operation read line error: " + ioe.getMessage());
+//		}
+//	}
 	
 	public void parseCheckpoint() {
 		try {
@@ -59,7 +56,7 @@ public class LogParser {
 			String[] data;
 			while ((line = reader.readLine()) != null) {
 				data = line.split(">"); //{filename, list of chunkhandles}
-				fileChunks.put(data[0], new ArrayList<String>(Arrays.asList(data[1].split(","))));
+//				fileChunks.put(data[0], new ArrayList<String>(Arrays.asList(data[1].split(","))));
 			}
 		} catch (FileNotFoundException fnfe) {
 			System.out.println("NO CHECKPOINT: " + fnfe.getMessage());
@@ -68,7 +65,7 @@ public class LogParser {
 		}
 	}
 	
-	private void writeCreate(String filename, ArrayList<String> replicas) {
+	public void writeCreateFile(String filename, ArrayList<String> replicas) {
 		try {
 			File file = new File(Constants.OP_LOG);
 			PrintWriter pw = new PrintWriter(file);
@@ -79,15 +76,15 @@ public class LogParser {
 					servers += ",";
 				}
 			}
-			pw.println("C " + filename + " " + servers);
-			pw.flush();
+			pw.println(Long.toString(getTime()) + " " + Constants.logOperations.get(FSMessageType.CreateFile) + " " + filename + " " + servers);
+			pw.flush(); 
 			pw.close();
 		} catch(IOException ioe) {
 			System.out.println("WriteCreate " + filename + " error: " + ioe.getMessage());
 		}	
 	}
 	
-	private void writeEdit(String type, String filename) {
+	public void writeEdit(String type, String filename) {
 		try {
 			File file = new File(Constants.OP_LOG);
 			PrintWriter pw = new PrintWriter(file);	
@@ -99,7 +96,7 @@ public class LogParser {
 		}	
 	}
 	
-	private void writeWrite(String filename, byte[] payload, RID rid) {
+	public void writeWrite(String filename, byte[] payload, RID rid) {
 		try {
 			File file = new File(Constants.OP_LOG);
 			PrintWriter pw = new PrintWriter(file);	
@@ -110,5 +107,23 @@ public class LogParser {
 		} catch(IOException ioe) {
 			System.out.println("WriteCreate " + filename + " error: " + ioe.getMessage());
 		}	
+	}
+	
+	public void writeCreateDirRecord(String dir) {
+		try {
+			File file = new File(Constants.OP_LOG);
+			PrintWriter pw = new PrintWriter(file);
+			pw.println(Long.toString(getTime()) + " " + Constants.logOperations.get(FSMessageType.CreateDir) + " " + dir);
+			pw.flush();
+			pw.close();
+		} catch(IOException ioe) {
+			System.out.println("WriteDir " + dir + " error: " + ioe.getMessage());
+		}	
+	}
+	
+	private long getTime() {
+		Date date = new Date();
+		Timestamp timestamp = new Timestamp(date.getTime());
+		return timestamp.getTime();
 	}
 }

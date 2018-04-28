@@ -69,10 +69,12 @@ public class ClientFSMessageHandler {
 			}
 				
 			case RenameDir:
+			{
 				RenameDirMessage realMess = (RenameDirMessage) message;
 				FSReturnVals returnVal = master.RenameDir(realMess.src, realMess.newName);
 				realMess.returnVal = returnVal;
 				return realMess;
+			}
 				
 			default:
 				return null;

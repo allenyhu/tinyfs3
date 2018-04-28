@@ -8,11 +8,19 @@ import java.net.Socket;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Map;
 import java.util.Set;
 
 import com.client.ClientFS.FSReturnVals;
 import com.client.FileHandle;
+import com.messages.CloseFileMessage;
+import com.messages.CreateDirMessage;
+import com.messages.CreateFileMessage;
+import com.messages.DeleteDirMessage;
+import com.messages.DeleteFileMessage;
+import com.messages.FSMessage;
+import com.messages.ListDirMessage;
+import com.messages.OpenFileMessage;
+import com.messages.RenameDirMessage;
 
 import utility.Constants;
 
@@ -26,9 +34,11 @@ public class Master extends Thread {
 	//private Socket toChunkServerSocket;
 	private ObjectInputStream fromChunkServerStream;
 	private ObjectOutputStream toChunkServerStream;
+	private LogParser recordLog;
 	
 	Master() {
 		//TODO load previous directory snapshot
+		recordLog = new LogParser();
 		loadState();
 		
 		try {
@@ -237,6 +247,39 @@ public class Master extends Thread {
 		//TODO calls operation log to checkpoint?
 		return FSReturnVals.Success;
 	}
+	
+	public void WriteLog(FSMessage message) {
+		switch (message.type) {
+			case CreateDir:
+			{
+				CreateDirMessage realMess = (CreateDirMessage) message;
+				recordLog.writeCreateDirRecord(realMess.dirname);
+			}
+				
+			case CreateFile:
+			{
+				CreateFileMessage realMess = (CreateFileMessage) message;
+				FileHandle file = fileMap.get(realMess.filename);
+				recordLog.writeCreateFile(file.getFileName(), file.getServers());
+			}
+			
+			case DeleteDir:
+			{
+//				DeleteDirMessage realMess = (DeleteDirMessage) message;
+			}
+				
+			case DeleteFile:
+			{
+//				DeleteFileMessage realMess = (DeleteFileMessage) message;
+			}
+				
+			case RenameDir:
+			{
+//				RenameDirMessage realMess = (RenameDirMessage) message;
+			}
+		}
+	}
+
 	
 	public static void main(String args[])
 	{

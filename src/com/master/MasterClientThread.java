@@ -5,6 +5,7 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
 
+import com.client.ClientFS.FSReturnVals;
 import com.messages.FSMessage;
 
 public class MasterClientThread extends Thread{
@@ -26,20 +27,23 @@ public class MasterClientThread extends Thread{
 	
 	@Override
 	public void run(){
+		FSMessage returnMess = null;
 		try {
 			while(true){
 				//read message, and get updated message object once the action has executed
 				FSMessage mess = (FSMessage) ois.readObject();
-				FSMessage newMess = cfsmh.processMessage(mess, master);
+				returnMess = cfsmh.processMessage(mess, master);
 
 				oos.reset();
-				oos.writeObject(newMess);
+				oos.writeObject(returnMess);
 				oos.flush();
 			}
 		} catch (ClassNotFoundException | IOException e) {
 			//System.out.println("client disconnected from master");
 		}finally{
-			//master.save();
+			if (returnMess.returnVal == FSReturnVals.Success){
+				master.WriteLog(returnMess);
+			}
 		}
 	}
 
