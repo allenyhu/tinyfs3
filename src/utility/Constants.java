@@ -10,7 +10,7 @@ public class Constants {
 	public static final int chunkSize = 4*1024;
 	
 	public static final int masterPort = 15003;
-	public static final String masterIP = "localhost";
+	public static final String masterIP = "127.0.0.1";
 	
 	public static final int chunkServerPort = 1234;
 	public static final String ChunkServerIP = "127.0.0.1";

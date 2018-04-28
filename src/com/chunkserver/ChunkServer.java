@@ -1,21 +1,14 @@
 package com.chunkserver;
 
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-import java.io.PrintWriter;
 import java.io.RandomAccessFile;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.util.Arrays;
-//import java.util.Arrays;
 
-import com.client.Client;
 import com.interfaces.ChunkServerInterface;
-import com.master.MasterClientThread;
-import com.master.MasterServerThread;
 
 import utility.Constants;
 
@@ -34,6 +27,7 @@ public class ChunkServer extends Thread implements ChunkServerInterface {
 	private ServerSocket ss;
 	private ObjectOutputStream oos;
 	private ObjectInputStream ois;
+	private ServerMasterThread master;
 	
 	public static int PayloadSZ = Integer.SIZE/Byte.SIZE;  //Number of bytes in an integer
 	public static int CMDlength = Integer.SIZE/Byte.SIZE;  //Number of bytes in an integer  
@@ -52,11 +46,24 @@ public class ChunkServer extends Thread implements ChunkServerInterface {
 	 */
 	public ChunkServer(){
 		try {
-			//Allocate a port and write it to the config file for the Client to consume
 			ss = new ServerSocket(Constants.chunkServerPort);
-			
+
 		} catch (IOException ex) {
 			System.out.println("Error, failed to open a new socket to listen on ChunkServer.");
+			ex.printStackTrace();
+		}
+		
+		try {
+			Socket s = new Socket(Constants.masterIP, Constants.masterPort);
+			oos = new ObjectOutputStream(s.getOutputStream());
+			oos.flush();
+			ois = new ObjectInputStream(s.getInputStream());
+			oos.writeObject("server");
+			oos.flush();
+			
+			master = new ServerMasterThread(s, ois, oos, this);
+		} catch (IOException ex) {
+			System.out.println("Error, failed to connect to master.");
 			ex.printStackTrace();
 		}
 		
@@ -129,11 +136,7 @@ public class ChunkServer extends Thread implements ChunkServerInterface {
 				//read in the identifier that will be sent so we know if this is the master
 				String identifier = (String) ois.readObject();
 				
-				if (identifier.equals("server")){
-					new ServerMasterThread(s, ois, oos, this);
-				}
-				
-				else if (identifier.equals("client")){
+				if (identifier.equals("client")){
 					//don't need to store client threads
 					new ServerClientThread(s, ois, oos, this);
 				}
@@ -235,4 +238,5 @@ public class ChunkServer extends Thread implements ChunkServerInterface {
 	{
 		new ChunkServer();
 	}
+
 }

@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.UUID;
 
 import com.client.ClientFS.FSReturnVals;
 import com.client.FileHandle;
@@ -25,6 +26,7 @@ public class Master extends Thread {
 	public Set<String> directories; 	// Keeps track of all directories
 	public HashMap<String, FileHandle> fileMap;
 	private ArrayList<MasterServerThread> chunkServers;
+	private Set<Long> chunkHandles;
 
 	private ServerSocket ss;
 	private Socket chunkServerSocket;
@@ -32,7 +34,7 @@ public class Master extends Thread {
 	private ObjectInputStream fromChunkServerStream;
 	private ObjectOutputStream toChunkServerStream;
 	private LogParser recordLog;
-	
+		
 	Master() {
 		recordLog = new LogParser();
 		//TODO load previous directory snapshot
@@ -41,6 +43,7 @@ public class Master extends Thread {
 		
 		try {
 			ss = new ServerSocket(Constants.masterPort);
+			//TODO Doesn't poll chunkservers for what chunks they have yet
 //			chunkServerSocket = new Socket(Constants.ChunkServerIP, Constants.chunkServerPort);
 //			
 //			//create a socket to the chunk server and store it
@@ -86,6 +89,7 @@ public class Master extends Thread {
 	
 	public void loadState() {
 		//TODO reload from checkpoint
+		chunkHandles = new HashSet<Long>();
 		directories = new HashSet<String>();
 		fileMap = new HashMap<String, FileHandle>();
 		directories.add("/");
@@ -286,6 +290,10 @@ public class Master extends Thread {
 		}
 	}
 
+	private String intializeChunk(){
+		//TODO LOL
+		return null;
+	}
 	
 	public static void main(String args[])
 	{
