@@ -5,10 +5,14 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
 import com.client.FileHandle;
+import com.client.ClientFS.FSReturnVals;
 
 import utility.Constants;
 
@@ -25,6 +29,7 @@ public class Master extends Thread {
 	
 	Master() {
 		//TODO load previous directory snapshot
+		loadState();
 		
 		try {
 			ss = new ServerSocket(Constants.masterPort);
@@ -38,7 +43,7 @@ public class Master extends Thread {
 			toChunkServerStream.writeObject("master");
 			toChunkServerStream.flush();
 			//TODO Specify chunk size to server?
-			
+			//TODO Master needs a list of all chunkServers
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -67,7 +72,167 @@ public class Master extends Thread {
 			}
 			
 		} catch (IOException | ClassNotFoundException e) {
-			//System.out.println("exception in master run method");
+			e.printStackTrace();;
 		}
 	}
+	
+	public void loadState() {
+		//TODO reload from checkpoint
+		directories = new HashSet<String>();
+		fileMap = new HashMap<String, FileHandle>();
+		directories.add("/");
+	}
+	
+	public FSReturnVals CreateDir(String src, String dirname) {
+		if (!directories.contains(src)) {
+			return FSReturnVals.SrcDirNotExistent;
+		}
+		
+		if (directories.contains(src + dirname + '/')) {
+			return FSReturnVals.DirExists;
+		}
+		
+		directories.add(src + dirname + '/');
+		return FSReturnVals.Success;
+	}
+	
+	public FSReturnVals DeleteDir(String src, String dirname) {
+		if (!directories.contains(src)) {
+			return FSReturnVals.SrcDirNotExistent;
+		}
+		
+		String dirToDelete = src + dirname + "/";
+
+		for (String directory : directories) {
+			if (directory.startsWith(dirToDelete) && !directory.equals(dirToDelete)) {
+				return FSReturnVals.DirNotEmpty;
+			}
+		}
+		
+		for (String filePath : fileMap.keySet()) {
+			if (filePath.startsWith(dirToDelete)) {
+				return FSReturnVals.DirNotEmpty;
+			}
+		}
+		
+		directories.remove(dirToDelete);
+		return FSReturnVals.Success;
+	}
+	
+	public FSReturnVals RenameDir(String src, String newname) {
+		src += "/";
+		newname += "/";
+		
+		if (!directories.contains(src)) {
+			return FSReturnVals.SrcDirNotExistent;
+		}
+		
+		if (directories.contains(newname)) {
+			return FSReturnVals.DestDirExists;	
+		}
+		
+		for (String directory : directories) {
+			if (directory.startsWith(src)) {
+				String newDirectory = directory.replace(src, newname);
+				directories.remove(directory);
+				directories.add(newDirectory);
+			}
+		}
+		
+		for (String key : fileMap.keySet()) {
+			if (key.startsWith(src)) {
+				String newFilePath = key.replace(src, newname);
+				FileHandle file = fileMap.get(key);
+				file.setFileName(newFilePath);
+				
+				fileMap.remove(key);
+				fileMap.put(newFilePath, file);
+			}
+		}
+
+		return FSReturnVals.Success;
+		
+	}
+	
+	public String[] ListDir(String target) {
+		ArrayList<String> directoryList = new ArrayList<String>();
+		
+		target += "/";
+		
+		for (String directory : directories) {
+			if (directory.startsWith(target) && !directory.equals(target)) {
+				// Trim out the last character: "/"
+				directoryList.add(directory.substring(0, directory.length() - 1));
+			}
+		}
+		
+		for (String key : fileMap.keySet()) {
+			if (key.startsWith(target)) {
+				// Trim out the last character: "/"
+				directoryList.add(key.substring(0, key.length() - 1));
+			}
+		}
+
+		
+		if (directoryList.size() == 0) {
+			return null;
+		} else {
+			return directoryList.toArray(new String[directoryList.size()]);
+		}
+	}
+	
+	public FSReturnVals CreateFile(String tgtdir, String filename) {
+		String filePath = tgtdir + filename;
+		
+		if (!directories.contains(tgtdir)) {
+			return FSReturnVals.SrcDirNotExistent;
+		}
+		
+		if (directories.contains(filePath)) {
+			return FSReturnVals.FileExists;	
+		}
+		
+		FileHandle newFileHandle = new FileHandle(filePath);		
+		fileMap.put(filePath, newFileHandle);
+		
+		return FSReturnVals.Success;
+	}
+	
+	public FSReturnVals DeleteFile(String tgtdir, String filename) {
+		String filePath = tgtdir + filename;
+		
+		if (!directories.contains(tgtdir)) {
+			return FSReturnVals.SrcDirNotExistent;
+		}
+		
+		if (!directories.contains(filePath)) {
+			return FSReturnVals.FileDoesNotExist;	
+		}
+		
+		fileMap.remove(filePath);
+		
+		return FSReturnVals.Success;
+	}
+	
+	public FSReturnVals OpenFile(String FilePath, FileHandle ofh) {
+		
+		if (!directories.contains(FilePath)) {
+			return FSReturnVals.FileDoesNotExist;
+		}
+		
+		if (!fileMap.containsKey(FilePath))
+		{
+			return FSReturnVals.Fail;
+		}
+		
+		//Needs to get sent back to the network
+		ofh.copy(fileMap.get(FilePath));
+		return FSReturnVals.Success;
+	}
+	
+	public FSReturnVals CloseFile(FileHandle ofh){
+		//TODO calls operation log to checkpoint?
+		return FSReturnVals.Success;
+	}
+	
 }
