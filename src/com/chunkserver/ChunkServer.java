@@ -16,6 +16,8 @@ import java.util.Arrays;
 import com.client.Client;
 import com.interfaces.ChunkServerInterface;
 
+import utility.Constants;
+
 /**
  * implementation of interfaces at the chunkserver side
  * @author Shahram Ghandeharizadeh
@@ -114,7 +116,7 @@ public class ChunkServer implements ChunkServerInterface {
 		ChunkServer cs = new ChunkServer();
 		
 		//Used for communication with the Client via the network
-		int ServerPort = 0; //Set to 0 to cause ServerSocket to allocate the port 
+		int ServerPort = Constants.chunkServerPort; //Set to 0 to cause ServerSocket to allocate the port 
 		ServerSocket commChanel = null;
 		ObjectOutputStream WriteOutput = null;
 		ObjectInputStream ReadInput = null;
