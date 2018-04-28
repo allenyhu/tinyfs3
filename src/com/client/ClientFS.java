@@ -1,6 +1,12 @@
 package com.client;
 
 public class ClientFS {
+	
+	private Socket s;
+	private ObjectOutputStream oos;
+	private ObjectInputStream ois;
+	private String masterIpaddress;
+	private Integer masterPort;
 
 	public enum FSReturnVals {
 		DirExists, // Returned by CreateDir when directory exists
@@ -16,6 +22,19 @@ public class ClientFS {
 		NotImplemented, // Specific to CSCI 485 and its unit tests
 		Success, //Returned when a method succeeds
 		Fail //Returned when a method fails
+	}
+	
+	public ClientFS(){
+		try {
+			s = new Socket(masterIpaddress, masterPort);
+			oos = new ObjectOutputStream(s.getOutputStream());
+			oos.flush();
+			ois = new ObjectInputStream(s.getInputStream());
+			oos.writeObject("client");
+			oos.flush();
+		} catch (IOException e) {
+			System.out.println("exception in client fs constructor: "+e.getMessage());
+		}
 	}
 
 	/**

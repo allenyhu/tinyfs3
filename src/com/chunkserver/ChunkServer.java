@@ -16,20 +16,20 @@ import java.util.Arrays;
 import com.client.Client;
 import com.interfaces.ChunkServerInterface;
 
-import utility.Constants;
-
 /**
  * implementation of interfaces at the chunkserver side
  * @author Shahram Ghandeharizadeh
  *
  */
 
-public class ChunkServer implements ChunkServerInterface {
+public class ChunkServer extends Thread implements ChunkServerInterface {
 	final static String filePath = "csci485/";	//or C:\\newfile.txt
 	public final static String ClientConfigFile = "ClientConfig.txt";
 	
 	//Used for the file system
 	public static long counter;
+	private int ServerPort = 0;
+	private ServerSocket commChannel;
 	
 	public static int PayloadSZ = Integer.SIZE/Byte.SIZE;  //Number of bytes in an integer
 	public static int CMDlength = Integer.SIZE/Byte.SIZE;  //Number of bytes in an integer  
@@ -47,6 +47,18 @@ public class ChunkServer implements ChunkServerInterface {
 	 * Initialize the chunk server
 	 */
 	public ChunkServer(){
+		try {
+			//Allocate a port and write it to the config file for the Client to consume
+			commChannel = new ServerSocket(ServerPort);
+			ServerPort = commChannel.getLocalPort();
+			PrintWriter outWrite = new PrintWriter(new FileOutputStream(ClientConfigFile));
+			outWrite.println("localhost:"+ServerPort);
+			outWrite.close();
+		} catch (IOException ex) {
+			System.out.println("Error, failed to open a new socket to listen on.");
+			ex.printStackTrace();
+		}
+		
 		File dir = new File(filePath);
 		File[] fs = dir.listFiles();
 
@@ -60,6 +72,7 @@ public class ChunkServer implements ChunkServerInterface {
 			Arrays.sort(cntrs);
 			counter = cntrs[cntrs.length - 1];
 		}
+		this.start();
 	}
 	
 	/**
@@ -111,34 +124,19 @@ public class ChunkServer implements ChunkServerInterface {
 		}
 	}
 	
-	public static void ReadAndProcessRequests()
+	@Override
+	public void run()
 	{
-		ChunkServer cs = new ChunkServer();
-		
 		//Used for communication with the Client via the network
-		int ServerPort = Constants.chunkServerPort; //Set to 0 to cause ServerSocket to allocate the port 
-		ServerSocket commChanel = null;
 		ObjectOutputStream WriteOutput = null;
 		ObjectInputStream ReadInput = null;
-		
-		try {
-			//Allocate a port and write it to the config file for the Client to consume
-			commChanel = new ServerSocket(ServerPort);
-			ServerPort=commChanel.getLocalPort();
-			PrintWriter outWrite=new PrintWriter(new FileOutputStream(ClientConfigFile));
-			outWrite.println("localhost:"+ServerPort);
-			outWrite.close();
-		} catch (IOException ex) {
-			System.out.println("Error, failed to open a new socket to listen on.");
-			ex.printStackTrace();
-		}
 		
 		boolean done = false;
 		Socket ClientConnection = null;  //A client's connection to the server
 
 		while (!done){
 			try {
-				ClientConnection = commChanel.accept();
+				ClientConnection = commChannel.accept();
 				ReadInput = new ObjectInputStream(ClientConnection.getInputStream());
 				WriteOutput = new ObjectOutputStream(ClientConnection.getOutputStream());
 				
@@ -150,7 +148,7 @@ public class ChunkServer implements ChunkServerInterface {
 					int CMD = Client.ReadIntFromInputStream("ChunkServer", ReadInput);
 					switch (CMD){
 					case CreateChunkCMD:
-						String chunkhandle = cs.createChunk();
+						String chunkhandle = this.createChunk();
 						byte[] CHinbytes = chunkhandle.getBytes();
 						WriteOutput.writeInt(ChunkServer.PayloadSZ + CHinbytes.length);
 						WriteOutput.write(CHinbytes);
@@ -166,7 +164,7 @@ public class ChunkServer implements ChunkServerInterface {
 						byte[] CHinBytes = Client.RecvPayload("ChunkServer", ReadInput, chunkhandlesize);
 						String ChunkHandle = (new String(CHinBytes)).toString();
 						
-						byte[] res = cs.readChunk(ChunkHandle, offset, payloadlength);
+						byte[] res = this.readChunk(ChunkHandle, offset, payloadlength);
 						
 						if (res == null)
 							WriteOutput.writeInt(ChunkServer.PayloadSZ);
@@ -188,7 +186,7 @@ public class ChunkServer implements ChunkServerInterface {
 						ChunkHandle = (new String(CHinBytes)).toString();
 
 						//Call the writeChunk command
-						if (cs.writeChunk(ChunkHandle, payload, offset))
+						if (this.writeChunk(ChunkHandle, payload, offset))
 							WriteOutput.writeInt(ChunkServer.TRUE);
 						else WriteOutput.writeInt(ChunkServer.FALSE);
 						
@@ -219,6 +217,6 @@ public class ChunkServer implements ChunkServerInterface {
 
 	public static void main(String args[])
 	{
-		ReadAndProcessRequests();
+		new ChunkServer();
 	}
 }

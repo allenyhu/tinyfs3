@@ -10,6 +10,7 @@ public class MasterClientThread extends Thread{
 	private Master master;
 	private ObjectOutputStream oos;
 	private ObjectInputStream ois;
+	private ClientFSMessageHandler cfsmh;
 	
 	//used specifically for the master to communicate with clients
 	public MasterClientThread(Socket s, ObjectInputStream ois, ObjectOutputStream oos, Master master){
@@ -17,29 +18,27 @@ public class MasterClientThread extends Thread{
 		this.master = master;
 		this.oos = oos;
 		this.ois = ois;
-
+		cfsmh = new ClientFSMessageHanderl();
 		this.start();
 	}
 	
 	@Override
 	public void run(){
-		
-//		try {
-//			while(true){
-//				/*
-//				 * TODO read message, process it, then respond with a message
-//				 */
-//				
-////				FSMessage mess = (FSMessage) ois.readObject();
-////				FSMessage newMess = factory.getAction(mess.getClass()).execute(mess, master);
-////
-////				oos.reset();
-////				oos.writeObject(newMess);
-////				oos.flush();
-//			}
-//		} catch (ClassNotFoundException | IOException e) {
-//			//System.out.println("client disconnected from master");
-//		}
+		try {
+			while(true){
+				//read message, and get updated message object once the action has executed
+				FSMessage mess = (FSMessage) ois.readObject();
+				FSMessage newMess = cfsmh.getMessage(mess, master);
+
+				oos.reset();
+				oos.writeObject(newMess);
+				oos.flush();
+			}
+		} catch (ClassNotFoundException | IOException e) {
+			//System.out.println("client disconnected from master");
+		}finally{
+			master.save();
+		}
 	}
 
 }
