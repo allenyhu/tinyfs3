@@ -27,19 +27,7 @@ public class MasterServerThread extends Thread {
 	@Override
 	public void run(){
 		//TODO shit still needs to be done
-//		try {
-//			while (true){
-//				//just read simple string command since so few messages needed
-//				String command = (String) ois.readObject();
-//				if (command.equals("replace_file")){
-//					FileHandle ofh = (FileHandle) ois.readObject();
-//					master.fileMap.replace(ofh.getFileNamePath(), ofh);
-//					master.save();
-//				}
-//			}
-//		} catch (IOException | ClassNotFoundException e) {
-//			//System.out.println("chunk server disconnected from master");
-//		}
+
 		
 	}
 }
