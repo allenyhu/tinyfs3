@@ -24,6 +24,7 @@ import utility.Constants;
 
 public class Master extends Thread {
 	public Set<String> directories; 	// Keeps track of all directories
+	public Set<Double> chunkSet;
 	public HashMap<String, FileHandle> fileMap;
 	private ArrayList<MasterServerThread> chunkServers;
 	private Set<Long> chunkHandles;
@@ -36,6 +37,7 @@ public class Master extends Thread {
 	private LogParser recordLog;
 		
 	Master() {
+		chunkSet = new HashSet<Double>();
 		recordLog = new LogParser();
 		//TODO load previous directory snapshot
 		loadState();
@@ -291,8 +293,12 @@ public class Master extends Thread {
 	}
 
 	private String intializeChunk(){
-		//TODO LOL
-		return null;
+		//TODO 
+		double chunkHandle = UUID.randomUUID().getLeastSignificantBits();
+		while(this.chunkSet.contains(Double.valueOf(chunkHandle))) {
+			chunkHandle = UUID.randomUUID().getLeastSignificantBits();
+		}
+		return Double.toString(chunkHandle);
 	}
 	
 	public static void main(String args[])
